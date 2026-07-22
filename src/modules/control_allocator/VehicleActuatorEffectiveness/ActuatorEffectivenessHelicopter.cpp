@@ -344,7 +344,7 @@ void ActuatorEffectivenessHelicopter::updateSysIdRcSelection()
 			_sys_id.mode = static_cast<int32_t>(SysIdMode::Disabled);
 
 		} else if (mode_value < switch_threshold) {
-			_sys_id.mode = static_cast<int32_t>(SysIdMode::Doublet);
+			_sys_id.mode = static_cast<int32_t>(SysIdMode::ThreeTwoOneOne);
 
 		} else {
 			_sys_id.mode = static_cast<int32_t>(SysIdMode::Sweep);
@@ -420,19 +420,25 @@ float ActuatorEffectivenessHelicopter::updateSysIdSignal(float &excitation, floa
 
 	elapsed_time = static_cast<float>(now - _sys_id_start_time) * 1e-6f;
 
-	if (elapsed_time > _sys_id.time_record) {
+	if (elapsed_time >= _sys_id.time_record) {
 		return 0.f;
 	}
 
-	if (_sys_id.mode == static_cast<int32_t>(SysIdMode::Doublet)) {
+	if (_sys_id.mode == static_cast<int32_t>(SysIdMode::ThreeTwoOneOne)) {
 		const float interval = math::max(_sys_id.interval, 0.1f);
 		const float phase_time = fmodf(elapsed_time, interval);
-		const float pulse_width = 0.25f * interval;
+		const float unit_time = interval / 7.f;
 
-		if (phase_time < pulse_width) {
+		if (phase_time < 3.f * unit_time) {
 			excitation = _sys_id.amplitude;
 
-		} else if (phase_time < 2.f * pulse_width) {
+		} else if (phase_time < 5.f * unit_time) {
+			excitation = -_sys_id.amplitude;
+
+		} else if (phase_time < 6.f * unit_time) {
+			excitation = _sys_id.amplitude;
+
+		} else {
 			excitation = -_sys_id.amplitude;
 		}
 

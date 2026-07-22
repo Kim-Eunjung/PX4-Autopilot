@@ -144,7 +144,7 @@ private:
 
 	enum class SysIdMode : int32_t {
 		Disabled = sys_id_actuator_s::MODE_DISABLED,
-		Doublet = sys_id_actuator_s::MODE_DOUBLET,
+		ThreeTwoOneOne = sys_id_actuator_s::MODE_3211,
 		Sweep = sys_id_actuator_s::MODE_SWEEP
 	};
 

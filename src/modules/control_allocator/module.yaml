@@ -588,7 +588,7 @@ parameters:
           type: enum
           values:
             0: Disabled
-            1: Doublet
+            1: 3-2-1-1
             2: Frequency sweep
           min: 0
           max: 2
@@ -613,7 +613,7 @@ parameters:
             long: |
               Selects a manual control AUX channel to command the actuator-level system identification mode.
               Set to 0 to use SYS_ID_EN directly.
-              With a 3-position switch, low is Disabled, center is Doublet, and high is Frequency sweep.
+              With a 3-position switch, low is Disabled, center is 3-2-1-1, and high is Frequency sweep.
           type: enum
           values:
             0: Disabled
@@ -658,10 +658,10 @@ parameters:
           default: 0.1
         SYS_ID_INTERV:
           description:
-            short: Actuator system identification doublet interval
+            short: Actuator system identification 3-2-1-1 interval
             long: |
-              Time interval used for the repeated doublet signal.
-              Each interval contains a positive pulse, a negative pulse, and a zero-command pause.
+              Total time interval used for the repeated 3-2-1-1 signal.
+              Each interval contains positive, negative, positive, and negative pulses with 3:2:1:1 relative durations.
           type: float
           decimal: 2
           unit: s
@@ -710,7 +710,7 @@ parameters:
           description:
             short: Actuator system identification trim
             long: |
-              Constant normalized actuator command added to the generated doublet or sweep while SYS_ID_EN is active.
+              Constant normalized actuator command added to the generated 3-2-1-1 or sweep while SYS_ID_EN is active.
               Set to zero for a zero-mean injected signal.
           type: float
           decimal: 3
