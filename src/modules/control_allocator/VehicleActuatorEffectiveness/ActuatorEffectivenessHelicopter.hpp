@@ -195,8 +195,8 @@ private:
 
 	void updateSysIdRcSelection();
 	float sysIdRcAuxValue(int32_t channel) const;
-	float updateSysIdSignal(float &excitation, float &frequency, float &elapsed_time);
-	void updateSysIdStatus(float signal, float excitation, float frequency, float elapsed_time,
+	float updateSysIdSignal(float &elapsed_time);
+	void updateSysIdStatus(float elapsed_time,
 				float pure_delta_lon, float pure_delta_lat, float pure_delta_col, float pure_delta_ped,
 				float sys_id_delta_lon, float sys_id_delta_lat, float sys_id_delta_col, float sys_id_delta_ped);
 };

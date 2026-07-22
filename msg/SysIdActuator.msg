@@ -12,9 +12,6 @@ uint8 AXIS_YAW = 2
 uint8 mode                      # SYS_ID_EN
 uint8 axis                      # SYS_ID_AXIS
 
-float32 signal                  # injected axis command including trim
-float32 excitation              # generated 3211/sweep command before trim
-float32 frequency               # current sweep angular frequency [rad/s]
 float32 elapsed_time            # time since injection start [s]
 
 float32 pure_delta_lon          # longitudinal cyclic command from controller path before SYS_ID

@@ -581,10 +581,7 @@ parameters:
 
         SYS_ID_EN:
           description:
-            short: Actuator system identification signal mode
-            long: |
-              Enables an actuator-level system identification signal for helicopter servos.
-              The signal is added after helicopter actuator mixing and before output clipping.
+            short: Heli sysid mode
           type: enum
           values:
             0: Disabled
@@ -595,10 +592,7 @@ parameters:
           default: 0
         SYS_ID_AXIS:
           description:
-            short: Actuator system identification axis
-            long: |
-              Selects the helicopter control axis used to distribute the injected actuator signal.
-              Roll and pitch are distributed across the swash plate servos, yaw is applied to the tail servo.
+            short: Heli sysid axis
           type: enum
           values:
             0: Roll
@@ -609,11 +603,7 @@ parameters:
           default: 1
         SYS_ID_RCMODE_CH:
           description:
-            short: Actuator system identification RC mode channel
-            long: |
-              Selects a manual control AUX channel to command the actuator-level system identification mode.
-              Set to 0 to use SYS_ID_EN directly.
-              With a 3-position switch, low is Disabled, center is 3-2-1-1, and high is Frequency sweep.
+            short: Heli sysid RC mode
           type: enum
           values:
             0: Disabled
@@ -628,11 +618,7 @@ parameters:
           default: 0
         SYS_ID_RCAXIS_CH:
           description:
-            short: Actuator system identification RC axis channel
-            long: |
-              Selects a manual control AUX channel to command the actuator-level system identification axis.
-              Set to 0 to use SYS_ID_AXIS directly.
-              With a 3-position switch, low is Roll, center is Pitch, and high is Yaw.
+            short: Heli sysid RC axis
           type: enum
           values:
             0: Disabled
@@ -647,9 +633,7 @@ parameters:
           default: 0
         SYS_ID_AMP:
           description:
-            short: Actuator system identification amplitude
-            long: |
-              Normalized actuator command amplitude of the injected signal.
+            short: Heli sysid amplitude
           type: float
           decimal: 3
           increment: 0.01
@@ -658,10 +642,7 @@ parameters:
           default: 0.1
         SYS_ID_INTERV:
           description:
-            short: Actuator system identification 3-2-1-1 interval
-            long: |
-              Total time interval used for the repeated 3-2-1-1 signal.
-              Each interval contains positive, negative, positive, and negative pulses with 3:2:1:1 relative durations.
+            short: Heli sysid 3211 time
           type: float
           decimal: 2
           unit: s
@@ -671,9 +652,7 @@ parameters:
           default: 5.0
         SYS_ID_OME_MIN:
           description:
-            short: Actuator system identification sweep start frequency
-            long: |
-              Start angular frequency for the linear frequency sweep.
+            short: Heli sysid start freq
           type: float
           decimal: 3
           unit: rad/s
@@ -683,9 +662,7 @@ parameters:
           default: 0.3
         SYS_ID_OME_MAX:
           description:
-            short: Actuator system identification sweep end frequency
-            long: |
-              End angular frequency for the linear frequency sweep.
+            short: Heli sysid end freq
           type: float
           decimal: 3
           unit: rad/s
@@ -695,10 +672,7 @@ parameters:
           default: 12.0
         SYS_ID_T_REC:
           description:
-            short: Actuator system identification duration
-            long: |
-              Duration of the actuator-level system identification signal.
-              Toggle SYS_ID_EN back to Disabled and then to the desired mode to restart.
+            short: Heli sysid duration
           type: float
           decimal: 1
           unit: s
@@ -708,10 +682,7 @@ parameters:
           default: 10.0
         SYS_ID_Y_TRIM:
           description:
-            short: Actuator system identification trim
-            long: |
-              Constant normalized actuator command added to the generated 3-2-1-1 or sweep while SYS_ID_EN is active.
-              Set to zero for a zero-mean injected signal.
+            short: Heli sysid trim
           type: float
           decimal: 3
           increment: 0.01
