@@ -1,5 +1,4 @@
 uint64 timestamp                # time since system start (microseconds)
-uint64 timestamp_sample         # source actuator sample timestamp
 
 uint8 MODE_DISABLED = 0
 uint8 MODE_3211 = 1

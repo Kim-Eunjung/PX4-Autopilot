@@ -584,9 +584,9 @@ parameters:
             short: Heli sysid mode
           type: enum
           values:
-            0: Disabled
-            1: 3-2-1-1
-            2: Frequency sweep
+            0: Off
+            1: 3211
+            2: Sweep
           min: 0
           max: 2
           default: 0
@@ -606,7 +606,7 @@ parameters:
             short: Heli sysid RC mode
           type: enum
           values:
-            0: Disabled
+            0: Off
             1: AUX1
             2: AUX2
             3: AUX3
@@ -621,7 +621,7 @@ parameters:
             short: Heli sysid RC axis
           type: enum
           values:
-            0: Disabled
+            0: Off
             1: AUX1
             2: AUX2
             3: AUX3

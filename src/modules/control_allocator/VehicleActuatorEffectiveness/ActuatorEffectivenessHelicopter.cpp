@@ -421,7 +421,6 @@ void ActuatorEffectivenessHelicopter::updateSysIdStatus(float elapsed_time,
 		float sys_id_delta_lon, float sys_id_delta_lat, float sys_id_delta_col, float sys_id_delta_ped)
 {
 	_sys_id_actuator_status.timestamp = hrt_absolute_time();
-	_sys_id_actuator_status.timestamp_sample = _sys_id_actuator_status.timestamp;
 	_sys_id_actuator_status.mode = static_cast<uint8_t>(_sys_id.mode);
 	_sys_id_actuator_status.axis = static_cast<uint8_t>(_sys_id.axis);
 	_sys_id_actuator_status.elapsed_time = elapsed_time;
