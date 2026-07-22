@@ -31,7 +31,3 @@ float32 total_delta_lon         # pure_delta_lon + sys_id_delta_lon
 float32 total_delta_lat         # pure_delta_lat + sys_id_delta_lat
 float32 total_delta_col         # pure_delta_col + sys_id_delta_col
 float32 total_delta_ped         # pure_delta_ped + sys_id_delta_ped
-
-float32[8] pure_servo           # requested actuator_servos command from controller path before SYS_ID
-float32[8] sys_id_servo         # requested SYS_ID actuator_servos component per servo channel
-float32[8] requested_servo      # pure_servo + sys_id_servo before clipping/output reversal

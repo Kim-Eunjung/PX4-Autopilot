@@ -199,14 +199,6 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 	float sys_id_excitation = 0.f;
 	float sys_id_frequency = 0.f;
 	float sys_id_elapsed_time = 0.f;
-	float pure_servo[actuator_servos_s::NUM_CONTROLS];
-	float sys_id_servo[actuator_servos_s::NUM_CONTROLS] {};
-	float requested_servo[actuator_servos_s::NUM_CONTROLS];
-
-	for (int i = 0; i < actuator_servos_s::NUM_CONTROLS; ++i) {
-		pure_servo[i] = NAN;
-		requested_servo[i] = NAN;
-	}
 
 	updateSysIdRcSelection();
 	const float sys_id_signal = updateSysIdSignal(sys_id_excitation, sys_id_frequency, sys_id_elapsed_time);
@@ -231,24 +223,11 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 			 + throttle * _geometry.yaw_throttle_scale;
 
 	const float pure_delta_ped = actuator_sp(1);
-	const int tail_servo_index = servoIndexFromActuatorIndex(1);
-
-	if (tail_servo_index >= 0 && tail_servo_index < actuator_servos_s::NUM_CONTROLS) {
-		pure_servo[tail_servo_index] = actuator_sp(1);
-	}
 
 	if (_sys_id.axis == static_cast<int32_t>(SysIdAxis::Yaw)) {
 		const float injection = sys_id_signal * _geometry.yaw_sign;
 		actuator_sp(1) += injection;
 		sys_id_delta_ped = injection;
-
-		if (tail_servo_index >= 0 && tail_servo_index < actuator_servos_s::NUM_CONTROLS) {
-			sys_id_servo[tail_servo_index] = injection;
-		}
-	}
-
-	if (tail_servo_index >= 0 && tail_servo_index < actuator_servos_s::NUM_CONTROLS) {
-		requested_servo[tail_servo_index] = actuator_sp(1);
 	}
 
 	if (_sys_id.axis == static_cast<int32_t>(SysIdAxis::Roll)) {
@@ -268,7 +247,6 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 
 	for (int i = 0; i < _geometry.num_swash_plate_servos; i++) {
 		const int actuator_index = _first_swash_plate_servo_index + i;
-		const int servo_index = servoIndexFromActuatorIndex(actuator_index);
 		float roll_coeff = sinf(_geometry.swash_plate_servos[i].angle) * _geometry.swash_plate_servos[i].arm_length;
 		float pitch_coeff = cosf(_geometry.swash_plate_servos[i].angle) * _geometry.swash_plate_servos[i].arm_length;
 		actuator_sp(actuator_index) = collective_pitch
@@ -279,10 +257,6 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 		// Apply linearization to the actuator setpoint if enabled
 		if (_geometry.linearize_servos) {
 			actuator_sp(actuator_index) = getLinearServoOutput(actuator_sp(actuator_index));
-		}
-
-		if (servo_index >= 0 && servo_index < actuator_servos_s::NUM_CONTROLS) {
-			pure_servo[servo_index] = actuator_sp(actuator_index);
 		}
 
 		float injection = 0.f;
@@ -296,14 +270,6 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 
 		if (fabsf(injection) > FLT_EPSILON) {
 			actuator_sp(actuator_index) += injection;
-
-			if (servo_index >= 0 && servo_index < actuator_servos_s::NUM_CONTROLS) {
-				sys_id_servo[servo_index] = injection;
-			}
-		}
-
-		if (servo_index >= 0 && servo_index < actuator_servos_s::NUM_CONTROLS) {
-			requested_servo[servo_index] = actuator_sp(actuator_index);
 		}
 
 		// Saturation check for roll & pitch
@@ -319,8 +285,7 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 
 	updateSysIdStatus(sys_id_signal, sys_id_excitation, sys_id_frequency, sys_id_elapsed_time,
 			  pure_delta_lon, pure_delta_lat, pure_delta_col, pure_delta_ped,
-			  sys_id_delta_lon, sys_id_delta_lat, sys_id_delta_col, sys_id_delta_ped,
-			  pure_servo, sys_id_servo, requested_servo);
+			  sys_id_delta_lon, sys_id_delta_lat, sys_id_delta_col, sys_id_delta_ped);
 }
 
 void ActuatorEffectivenessHelicopter::updateSysIdRcSelection()
@@ -455,21 +420,9 @@ float ActuatorEffectivenessHelicopter::updateSysIdSignal(float &excitation, floa
 	return _sys_id.trim + excitation;
 }
 
-int ActuatorEffectivenessHelicopter::servoIndexFromActuatorIndex(int actuator_index) const
-{
-	if (_tail_actuator_type == ActuatorType::SERVOS) {
-		return actuator_index - 1;
-	}
-
-	return actuator_index - 2;
-}
-
 void ActuatorEffectivenessHelicopter::updateSysIdStatus(float signal, float excitation, float frequency, float elapsed_time,
 		float pure_delta_lon, float pure_delta_lat, float pure_delta_col, float pure_delta_ped,
-		float sys_id_delta_lon, float sys_id_delta_lat, float sys_id_delta_col, float sys_id_delta_ped,
-		const float pure_servo[actuator_servos_s::NUM_CONTROLS],
-		const float sys_id_servo[actuator_servos_s::NUM_CONTROLS],
-		const float requested_servo[actuator_servos_s::NUM_CONTROLS])
+		float sys_id_delta_lon, float sys_id_delta_lat, float sys_id_delta_col, float sys_id_delta_ped)
 {
 	_sys_id_actuator_status.timestamp = hrt_absolute_time();
 	_sys_id_actuator_status.timestamp_sample = _sys_id_actuator_status.timestamp;
@@ -491,12 +444,6 @@ void ActuatorEffectivenessHelicopter::updateSysIdStatus(float signal, float exci
 	_sys_id_actuator_status.total_delta_lat = pure_delta_lat + sys_id_delta_lat;
 	_sys_id_actuator_status.total_delta_col = pure_delta_col + sys_id_delta_col;
 	_sys_id_actuator_status.total_delta_ped = pure_delta_ped + sys_id_delta_ped;
-
-	for (int i = 0; i < actuator_servos_s::NUM_CONTROLS; ++i) {
-		_sys_id_actuator_status.pure_servo[i] = pure_servo[i];
-		_sys_id_actuator_status.sys_id_servo[i] = sys_id_servo[i];
-		_sys_id_actuator_status.requested_servo[i] = requested_servo[i];
-	}
 
 	_sys_id_actuator_pub.publish(_sys_id_actuator_status);
 }

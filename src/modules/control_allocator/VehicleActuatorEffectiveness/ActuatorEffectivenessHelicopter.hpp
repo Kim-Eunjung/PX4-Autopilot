@@ -40,7 +40,6 @@
 
 #include <uORB/Publication.hpp>
 #include <uORB/Subscription.hpp>
-#include <uORB/topics/actuator_servos.h>
 #include <uORB/topics/manual_control_setpoint.h>
 #include <uORB/topics/sys_id_actuator.h>
 #include <uORB/topics/vehicle_status.h>
@@ -197,11 +196,7 @@ private:
 	void updateSysIdRcSelection();
 	float sysIdRcAuxValue(int32_t channel) const;
 	float updateSysIdSignal(float &excitation, float &frequency, float &elapsed_time);
-	int servoIndexFromActuatorIndex(int actuator_index) const;
 	void updateSysIdStatus(float signal, float excitation, float frequency, float elapsed_time,
 				float pure_delta_lon, float pure_delta_lat, float pure_delta_col, float pure_delta_ped,
-				float sys_id_delta_lon, float sys_id_delta_lat, float sys_id_delta_col, float sys_id_delta_ped,
-				const float pure_servo[actuator_servos_s::NUM_CONTROLS],
-				const float sys_id_servo[actuator_servos_s::NUM_CONTROLS],
-				const float requested_servo[actuator_servos_s::NUM_CONTROLS]);
+				float sys_id_delta_lon, float sys_id_delta_lat, float sys_id_delta_col, float sys_id_delta_ped);
 };
