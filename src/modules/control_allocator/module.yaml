@@ -607,7 +607,7 @@ parameters:
           min: 0
           max: 2
           default: 1
-        SYS_ID_RC_MODE:
+        SYS_ID_RC_MODE_CH:
           description:
             short: Actuator system identification RC mode channel
             long: |
@@ -626,7 +626,7 @@ parameters:
           min: 0
           max: 6
           default: 0
-        SYS_ID_RC_AXIS:
+        SYS_ID_RC_AXIS_CH:
           description:
             short: Actuator system identification RC axis channel
             long: |

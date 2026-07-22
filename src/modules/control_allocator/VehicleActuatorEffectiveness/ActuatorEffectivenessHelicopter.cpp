@@ -70,8 +70,8 @@ ActuatorEffectivenessHelicopter::ActuatorEffectivenessHelicopter(ModuleParams *p
 	_param_handles.max_servo_throw = param_find("CA_MAX_SVO_THROW");
 	_param_handles.sys_id_en = param_find("SYS_ID_EN");
 	_param_handles.sys_id_axis = param_find("SYS_ID_AXIS");
-	_param_handles.sys_id_rc_mode = param_find("SYS_ID_RC_MODE");
-	_param_handles.sys_id_rc_axis = param_find("SYS_ID_RC_AXIS");
+	_param_handles.sys_id_rc_mode = param_find("SYS_ID_RC_MODE_CH");
+	_param_handles.sys_id_rc_axis = param_find("SYS_ID_RC_AXIS_CH");
 	_param_handles.sys_id_amp = param_find("SYS_ID_AMP");
 	_param_handles.sys_id_interval = param_find("SYS_ID_INTERV");
 	_param_handles.sys_id_omega_min = param_find("SYS_ID_OME_MIN");
