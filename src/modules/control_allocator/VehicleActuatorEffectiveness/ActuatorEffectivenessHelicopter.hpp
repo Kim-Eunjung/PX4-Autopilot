@@ -41,6 +41,7 @@
 #include <uORB/Publication.hpp>
 #include <uORB/Subscription.hpp>
 #include <uORB/topics/actuator_servos.h>
+#include <uORB/topics/manual_control_setpoint.h>
 #include <uORB/topics/sys_id_actuator.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/manual_control_switches.h>
@@ -128,6 +129,8 @@ private:
 		param_t max_servo_throw;
 		param_t sys_id_en;
 		param_t sys_id_axis;
+		param_t sys_id_rc_mode;
+		param_t sys_id_rc_axis;
 		param_t sys_id_amp;
 		param_t sys_id_interval;
 		param_t sys_id_omega_min;
@@ -152,8 +155,12 @@ private:
 	};
 
 	struct SysIdConfig {
+		int32_t mode_param{0};
+		int32_t axis_param{0};
 		int32_t mode{0};
 		int32_t axis{0};
+		int32_t rc_mode_channel{0};
+		int32_t rc_axis_channel{0};
 		float amplitude{0.f};
 		float interval{0.f};
 		float omega_min{0.f};
@@ -180,12 +187,17 @@ private:
 	uORB::Subscription _manual_control_switches_sub{ORB_ID(manual_control_switches)};
 	bool _main_motor_engaged{true};
 
+	uORB::Subscription _manual_control_setpoint_sub{ORB_ID(manual_control_setpoint)};
+	manual_control_setpoint_s _manual_control_setpoint{};
+
 	const ActuatorType _tail_actuator_type;
 
 #if CONTROL_ALLOCATOR_RPM_CONTROL
 	RpmControl _rpm_control {this};
 #endif // CONTROL_ALLOCATOR_RPM_CONTROL
 
+	void updateSysIdRcSelection();
+	float sysIdRcAuxValue(int32_t channel) const;
 	float updateSysIdSignal(float &excitation, float &frequency, float &elapsed_time);
 	int servoIndexFromActuatorIndex(int actuator_index) const;
 	void updateSysIdStatus(float signal, float excitation, float frequency, float elapsed_time,

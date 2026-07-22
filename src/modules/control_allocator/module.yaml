@@ -606,6 +606,44 @@ parameters:
             2: Yaw
           min: 0
           max: 2
+          default: 1
+        SYS_ID_RC_MODE:
+          description:
+            short: Actuator system identification RC mode channel
+            long: |
+              Selects a manual control AUX channel to command the actuator-level system identification mode.
+              Set to 0 to use SYS_ID_EN directly.
+              With a 3-position switch, low is Disabled, center is Doublet, and high is Frequency sweep.
+          type: enum
+          values:
+            0: Disabled
+            1: AUX1
+            2: AUX2
+            3: AUX3
+            4: AUX4
+            5: AUX5
+            6: AUX6
+          min: 0
+          max: 6
+          default: 0
+        SYS_ID_RC_AXIS:
+          description:
+            short: Actuator system identification RC axis channel
+            long: |
+              Selects a manual control AUX channel to command the actuator-level system identification axis.
+              Set to 0 to use SYS_ID_AXIS directly.
+              With a 3-position switch, low is Roll, center is Pitch, and high is Yaw.
+          type: enum
+          values:
+            0: Disabled
+            1: AUX1
+            2: AUX2
+            3: AUX3
+            4: AUX4
+            5: AUX5
+            6: AUX6
+          min: 0
+          max: 6
           default: 0
         SYS_ID_AMP:
           description:
@@ -642,7 +680,7 @@ parameters:
           increment: 0.1
           min: 0.01
           max: 100
-          default: 0.1
+          default: 0.3
         SYS_ID_OME_MAX:
           description:
             short: Actuator system identification sweep end frequency
@@ -667,7 +705,7 @@ parameters:
           increment: 1
           min: 1
           max: 300
-          default: 60.0
+          default: 10.0
         SYS_ID_Y_TRIM:
           description:
             short: Actuator system identification trim

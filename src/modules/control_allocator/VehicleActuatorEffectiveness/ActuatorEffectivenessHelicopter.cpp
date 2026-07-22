@@ -70,6 +70,8 @@ ActuatorEffectivenessHelicopter::ActuatorEffectivenessHelicopter(ModuleParams *p
 	_param_handles.max_servo_throw = param_find("CA_MAX_SVO_THROW");
 	_param_handles.sys_id_en = param_find("SYS_ID_EN");
 	_param_handles.sys_id_axis = param_find("SYS_ID_AXIS");
+	_param_handles.sys_id_rc_mode = param_find("SYS_ID_RC_MODE");
+	_param_handles.sys_id_rc_axis = param_find("SYS_ID_RC_AXIS");
 	_param_handles.sys_id_amp = param_find("SYS_ID_AMP");
 	_param_handles.sys_id_interval = param_find("SYS_ID_INTERV");
 	_param_handles.sys_id_omega_min = param_find("SYS_ID_OME_MIN");
@@ -128,8 +130,10 @@ void ActuatorEffectivenessHelicopter::updateParams()
 		_geometry.max_servo_height = _geometry.inverse_max_servo_throw = 0.f;
 	}
 
-	param_get(_param_handles.sys_id_en, &_sys_id.mode);
-	param_get(_param_handles.sys_id_axis, &_sys_id.axis);
+	param_get(_param_handles.sys_id_en, &_sys_id.mode_param);
+	param_get(_param_handles.sys_id_axis, &_sys_id.axis_param);
+	param_get(_param_handles.sys_id_rc_mode, &_sys_id.rc_mode_channel);
+	param_get(_param_handles.sys_id_rc_axis, &_sys_id.rc_axis_channel);
 	param_get(_param_handles.sys_id_amp, &_sys_id.amplitude);
 	param_get(_param_handles.sys_id_interval, &_sys_id.interval);
 	param_get(_param_handles.sys_id_omega_min, &_sys_id.omega_min);
@@ -137,12 +141,16 @@ void ActuatorEffectivenessHelicopter::updateParams()
 	param_get(_param_handles.sys_id_time_record, &_sys_id.time_record);
 	param_get(_param_handles.sys_id_trim, &_sys_id.trim);
 
-	_sys_id.mode = math::constrain(_sys_id.mode,
-				       static_cast<int32_t>(SysIdMode::Disabled),
-				       static_cast<int32_t>(SysIdMode::Sweep));
-	_sys_id.axis = math::constrain(_sys_id.axis,
-				       static_cast<int32_t>(SysIdAxis::Roll),
-				       static_cast<int32_t>(SysIdAxis::Yaw));
+	_sys_id.mode_param = math::constrain(_sys_id.mode_param,
+					     static_cast<int32_t>(SysIdMode::Disabled),
+					     static_cast<int32_t>(SysIdMode::Sweep));
+	_sys_id.axis_param = math::constrain(_sys_id.axis_param,
+					     static_cast<int32_t>(SysIdAxis::Roll),
+					     static_cast<int32_t>(SysIdAxis::Yaw));
+	_sys_id.rc_mode_channel = math::constrain(_sys_id.rc_mode_channel, 0, 6);
+	_sys_id.rc_axis_channel = math::constrain(_sys_id.rc_axis_channel, 0, 6);
+	_sys_id.mode = _sys_id.mode_param;
+	_sys_id.axis = _sys_id.axis_param;
 	_sys_id.amplitude = math::constrain(_sys_id.amplitude, 0.f, 1.f);
 	_sys_id.interval = math::max(_sys_id.interval, 0.1f);
 	_sys_id.omega_min = math::max(_sys_id.omega_min, 0.01f);
@@ -198,6 +206,7 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 		requested_servo[i] = NAN;
 	}
 
+	updateSysIdRcSelection();
 	const float sys_id_signal = updateSysIdSignal(sys_id_excitation, sys_id_frequency, sys_id_elapsed_time);
 
 	// throttle/collective pitch curve
@@ -310,6 +319,77 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 			  pure_delta_lon, pure_delta_lat, pure_delta_col, pure_delta_ped,
 			  sys_id_delta_lon, sys_id_delta_lat, sys_id_delta_col, sys_id_delta_ped,
 			  pure_servo, sys_id_servo, requested_servo);
+}
+
+void ActuatorEffectivenessHelicopter::updateSysIdRcSelection()
+{
+	_sys_id.mode = _sys_id.mode_param;
+	_sys_id.axis = _sys_id.axis_param;
+
+	if (_sys_id.rc_mode_channel == 0 && _sys_id.rc_axis_channel == 0) {
+		return;
+	}
+
+	_manual_control_setpoint_sub.update(&_manual_control_setpoint);
+
+	if (!_manual_control_setpoint.valid || hrt_elapsed_time(&_manual_control_setpoint.timestamp) > 500_ms) {
+		return;
+	}
+
+	constexpr float switch_threshold = 0.33f;
+	const float mode_value = sysIdRcAuxValue(_sys_id.rc_mode_channel);
+
+	if (PX4_ISFINITE(mode_value)) {
+		if (mode_value < -switch_threshold) {
+			_sys_id.mode = static_cast<int32_t>(SysIdMode::Disabled);
+
+		} else if (mode_value < switch_threshold) {
+			_sys_id.mode = static_cast<int32_t>(SysIdMode::Doublet);
+
+		} else {
+			_sys_id.mode = static_cast<int32_t>(SysIdMode::Sweep);
+		}
+	}
+
+	const float axis_value = sysIdRcAuxValue(_sys_id.rc_axis_channel);
+
+	if (PX4_ISFINITE(axis_value)) {
+		if (axis_value < -switch_threshold) {
+			_sys_id.axis = static_cast<int32_t>(SysIdAxis::Roll);
+
+		} else if (axis_value < switch_threshold) {
+			_sys_id.axis = static_cast<int32_t>(SysIdAxis::Pitch);
+
+		} else {
+			_sys_id.axis = static_cast<int32_t>(SysIdAxis::Yaw);
+		}
+	}
+}
+
+float ActuatorEffectivenessHelicopter::sysIdRcAuxValue(int32_t channel) const
+{
+	switch (channel) {
+	case 1:
+		return _manual_control_setpoint.aux1;
+
+	case 2:
+		return _manual_control_setpoint.aux2;
+
+	case 3:
+		return _manual_control_setpoint.aux3;
+
+	case 4:
+		return _manual_control_setpoint.aux4;
+
+	case 5:
+		return _manual_control_setpoint.aux5;
+
+	case 6:
+		return _manual_control_setpoint.aux6;
+
+	default:
+		return NAN;
+	}
 }
 
 float ActuatorEffectivenessHelicopter::updateSysIdSignal(float &excitation, float &frequency, float &elapsed_time)
