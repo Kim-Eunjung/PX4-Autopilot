@@ -35,9 +35,13 @@
 
 #include "control_allocation/actuator_effectiveness/ActuatorEffectiveness.hpp"
 
+#include <drivers/drv_hrt.h>
 #include <px4_platform_common/module_params.h>
 
+#include <uORB/Publication.hpp>
 #include <uORB/Subscription.hpp>
+#include <uORB/topics/actuator_servos.h>
+#include <uORB/topics/sys_id_actuator.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/manual_control_switches.h>
 
@@ -84,6 +88,8 @@ public:
 	void updateSetpoint(const matrix::Vector<float, NUM_AXES> &control_sp, int matrix_index, ActuatorVector &actuator_sp,
 			    const ActuatorVector &actuator_min, const ActuatorVector &actuator_max) override;
 
+	void publishSysIdActuatorStatus(const actuator_servos_s &actuator_servos);
+
 	void getUnallocatedControl(int matrix_index, control_allocator_status_s &status) override;
 private:
 	float throttleSpoolupProgress();
@@ -120,10 +126,48 @@ private:
 		param_t yaw_ccw;
 		param_t spoolup_time;
 		param_t max_servo_throw;
+		param_t sys_id_en;
+		param_t sys_id_axis;
+		param_t sys_id_amp;
+		param_t sys_id_interval;
+		param_t sys_id_omega_min;
+		param_t sys_id_omega_max;
+		param_t sys_id_time_record;
+		param_t sys_id_trim;
 	};
 	ParamHandles _param_handles{};
 
 	Geometry _geometry{};
+
+	enum class SysIdMode : int32_t {
+		Disabled = sys_id_actuator_s::MODE_DISABLED,
+		Doublet = sys_id_actuator_s::MODE_DOUBLET,
+		Sweep = sys_id_actuator_s::MODE_SWEEP
+	};
+
+	enum class SysIdAxis : int32_t {
+		Roll = sys_id_actuator_s::AXIS_ROLL,
+		Pitch = sys_id_actuator_s::AXIS_PITCH,
+		Yaw = sys_id_actuator_s::AXIS_YAW
+	};
+
+	struct SysIdConfig {
+		int32_t mode{0};
+		int32_t axis{0};
+		float amplitude{0.f};
+		float interval{0.f};
+		float omega_min{0.f};
+		float omega_max{0.f};
+		float time_record{0.f};
+		float trim{0.f};
+	};
+
+	SysIdConfig _sys_id{};
+	int32_t _sys_id_last_mode{0};
+	int32_t _sys_id_last_axis{0};
+	hrt_abstime _sys_id_start_time{0};
+	sys_id_actuator_s _sys_id_actuator_status{};
+	uORB::Publication<sys_id_actuator_s> _sys_id_actuator_pub{ORB_ID(sys_id_actuator)};
 
 	int _first_swash_plate_servo_index{};
 	SaturationFlags _saturation_flags;
@@ -141,4 +185,13 @@ private:
 #if CONTROL_ALLOCATOR_RPM_CONTROL
 	RpmControl _rpm_control {this};
 #endif // CONTROL_ALLOCATOR_RPM_CONTROL
+
+	float updateSysIdSignal(float &excitation, float &frequency, float &elapsed_time);
+	int servoIndexFromActuatorIndex(int actuator_index) const;
+	void updateSysIdStatus(float signal, float excitation, float frequency, float elapsed_time,
+				float pure_delta_lon, float pure_delta_lat, float pure_delta_col, float pure_delta_ped,
+				float sys_id_delta_lon, float sys_id_delta_lat, float sys_id_delta_col, float sys_id_delta_ped,
+				const float pure_servo[actuator_servos_s::NUM_CONTROLS],
+				const float sys_id_servo[actuator_servos_s::NUM_CONTROLS],
+				const float requested_servo[actuator_servos_s::NUM_CONTROLS]);
 };

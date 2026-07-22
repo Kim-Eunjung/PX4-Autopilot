@@ -59,6 +59,7 @@ void LoggedTopics::add_default_topics()
 	add_topic("config_overrides");
 	add_topic("cpuload");
 	add_topic("distance_sensor_mode_change_request");
+	add_optional_topic("sys_id_actuator", 100);
 	add_topic_multi("dronecan_node_status", 250);
 	add_optional_topic("external_ins_attitude");
 	add_optional_topic("external_ins_global_position");
@@ -282,6 +283,7 @@ void LoggedTopics::add_high_rate_topics()
 	add_topic("actuator_motors");
 	add_topic("actuator_outputs_debug");
 	add_topic("actuator_servos");
+	add_optional_topic("sys_id_actuator");
 	add_topic_multi("vehicle_thrust_setpoint", 0, 2);
 	add_topic_multi("vehicle_torque_setpoint", 0, 2);
 }
@@ -364,6 +366,8 @@ void LoggedTopics::add_system_identification_topics()
 	add_topic("vehicle_torque_setpoint");
 	add_topic("vehicle_acceleration");
 	add_topic("actuator_motors");
+	add_optional_topic("actuator_servos");
+	add_optional_topic("sys_id_actuator");
 }
 
 void LoggedTopics::add_high_rate_sensors_topics()

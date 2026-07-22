@@ -579,6 +579,108 @@ parameters:
           max: 75
           default: 0.0
 
+        SYS_ID_EN:
+          description:
+            short: Actuator system identification signal mode
+            long: |
+              Enables an actuator-level system identification signal for helicopter servos.
+              The signal is added after helicopter actuator mixing and before output clipping.
+          type: enum
+          values:
+            0: Disabled
+            1: Doublet
+            2: Frequency sweep
+          min: 0
+          max: 2
+          default: 0
+        SYS_ID_AXIS:
+          description:
+            short: Actuator system identification axis
+            long: |
+              Selects the helicopter control axis used to distribute the injected actuator signal.
+              Roll and pitch are distributed across the swash plate servos, yaw is applied to the tail servo.
+          type: enum
+          values:
+            0: Roll
+            1: Pitch
+            2: Yaw
+          min: 0
+          max: 2
+          default: 0
+        SYS_ID_AMP:
+          description:
+            short: Actuator system identification amplitude
+            long: |
+              Normalized actuator command amplitude of the injected signal.
+          type: float
+          decimal: 3
+          increment: 0.01
+          min: 0
+          max: 1
+          default: 0.1
+        SYS_ID_INTERV:
+          description:
+            short: Actuator system identification doublet interval
+            long: |
+              Time interval used for the repeated doublet signal.
+              Each interval contains a positive pulse, a negative pulse, and a zero-command pause.
+          type: float
+          decimal: 2
+          unit: s
+          increment: 0.1
+          min: 0.1
+          max: 60
+          default: 5.0
+        SYS_ID_OME_MIN:
+          description:
+            short: Actuator system identification sweep start frequency
+            long: |
+              Start angular frequency for the linear frequency sweep.
+          type: float
+          decimal: 3
+          unit: rad/s
+          increment: 0.1
+          min: 0.01
+          max: 100
+          default: 0.1
+        SYS_ID_OME_MAX:
+          description:
+            short: Actuator system identification sweep end frequency
+            long: |
+              End angular frequency for the linear frequency sweep.
+          type: float
+          decimal: 3
+          unit: rad/s
+          increment: 0.1
+          min: 0.01
+          max: 100
+          default: 12.0
+        SYS_ID_T_REC:
+          description:
+            short: Actuator system identification duration
+            long: |
+              Duration of the actuator-level system identification signal.
+              Toggle SYS_ID_EN back to Disabled and then to the desired mode to restart.
+          type: float
+          decimal: 1
+          unit: s
+          increment: 1
+          min: 1
+          max: 300
+          default: 60.0
+        SYS_ID_Y_TRIM:
+          description:
+            short: Actuator system identification trim
+            long: |
+              Constant normalized actuator command added to the generated doublet or sweep while SYS_ID_EN is active.
+              Set to zero for a zero-mean injected signal.
+          type: float
+          decimal: 3
+          increment: 0.01
+          min: -1
+          max: 1
+          default: 0.0
+
         # Others
         CA_FAILURE_MODE:
             description:
