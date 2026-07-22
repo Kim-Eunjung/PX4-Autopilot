@@ -492,66 +492,10 @@ void ActuatorEffectivenessHelicopter::updateSysIdStatus(float signal, float exci
 	_sys_id_actuator_status.total_delta_col = pure_delta_col + sys_id_delta_col;
 	_sys_id_actuator_status.total_delta_ped = pure_delta_ped + sys_id_delta_ped;
 
-	if (_tail_actuator_type == ActuatorType::SERVOS) {
-		_sys_id_actuator_status.pure_servo_tail = pure_servo[0];
-		_sys_id_actuator_status.pure_servo_swash0 = pure_servo[1];
-		_sys_id_actuator_status.pure_servo_swash1 = pure_servo[2];
-		_sys_id_actuator_status.pure_servo_swash2 = pure_servo[3];
-		_sys_id_actuator_status.pure_servo_swash3 = pure_servo[4];
-		_sys_id_actuator_status.sys_id_servo_tail = sys_id_servo[0];
-		_sys_id_actuator_status.sys_id_servo_swash0 = sys_id_servo[1];
-		_sys_id_actuator_status.sys_id_servo_swash1 = sys_id_servo[2];
-		_sys_id_actuator_status.sys_id_servo_swash2 = sys_id_servo[3];
-		_sys_id_actuator_status.sys_id_servo_swash3 = sys_id_servo[4];
-		_sys_id_actuator_status.requested_servo_tail = requested_servo[0];
-		_sys_id_actuator_status.requested_servo_swash0 = requested_servo[1];
-		_sys_id_actuator_status.requested_servo_swash1 = requested_servo[2];
-		_sys_id_actuator_status.requested_servo_swash2 = requested_servo[3];
-		_sys_id_actuator_status.requested_servo_swash3 = requested_servo[4];
-
-	} else {
-		_sys_id_actuator_status.pure_servo_tail = NAN;
-		_sys_id_actuator_status.pure_servo_swash0 = pure_servo[0];
-		_sys_id_actuator_status.pure_servo_swash1 = pure_servo[1];
-		_sys_id_actuator_status.pure_servo_swash2 = pure_servo[2];
-		_sys_id_actuator_status.pure_servo_swash3 = pure_servo[3];
-		_sys_id_actuator_status.sys_id_servo_tail = NAN;
-		_sys_id_actuator_status.sys_id_servo_swash0 = sys_id_servo[0];
-		_sys_id_actuator_status.sys_id_servo_swash1 = sys_id_servo[1];
-		_sys_id_actuator_status.sys_id_servo_swash2 = sys_id_servo[2];
-		_sys_id_actuator_status.sys_id_servo_swash3 = sys_id_servo[3];
-		_sys_id_actuator_status.requested_servo_tail = NAN;
-		_sys_id_actuator_status.requested_servo_swash0 = requested_servo[0];
-		_sys_id_actuator_status.requested_servo_swash1 = requested_servo[1];
-		_sys_id_actuator_status.requested_servo_swash2 = requested_servo[2];
-		_sys_id_actuator_status.requested_servo_swash3 = requested_servo[3];
-	}
-
 	for (int i = 0; i < actuator_servos_s::NUM_CONTROLS; ++i) {
 		_sys_id_actuator_status.pure_servo[i] = pure_servo[i];
 		_sys_id_actuator_status.sys_id_servo[i] = sys_id_servo[i];
 		_sys_id_actuator_status.requested_servo[i] = requested_servo[i];
-	}
-}
-
-void ActuatorEffectivenessHelicopter::publishSysIdActuatorStatus(const actuator_servos_s &actuator_servos)
-{
-	_sys_id_actuator_status.timestamp = hrt_absolute_time();
-	_sys_id_actuator_status.timestamp_sample = actuator_servos.timestamp_sample;
-
-	if (_tail_actuator_type == ActuatorType::SERVOS) {
-		_sys_id_actuator_status.servo_tail = actuator_servos.control[0];
-		_sys_id_actuator_status.servo_swash0 = actuator_servos.control[1];
-		_sys_id_actuator_status.servo_swash1 = actuator_servos.control[2];
-		_sys_id_actuator_status.servo_swash2 = actuator_servos.control[3];
-		_sys_id_actuator_status.servo_swash3 = actuator_servos.control[4];
-
-	} else {
-		_sys_id_actuator_status.servo_tail = NAN;
-		_sys_id_actuator_status.servo_swash0 = actuator_servos.control[0];
-		_sys_id_actuator_status.servo_swash1 = actuator_servos.control[1];
-		_sys_id_actuator_status.servo_swash2 = actuator_servos.control[2];
-		_sys_id_actuator_status.servo_swash3 = actuator_servos.control[3];
 	}
 
 	_sys_id_actuator_pub.publish(_sys_id_actuator_status);

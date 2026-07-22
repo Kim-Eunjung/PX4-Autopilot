@@ -707,10 +707,6 @@ ControlAllocator::publish_actuator_controls()
 
 		_actuator_servos_pub.publish(actuator_servos);
 
-		if (_effectiveness_source_id == EffectivenessSource::HELICOPTER_TAIL_ESC
-		    || _effectiveness_source_id == EffectivenessSource::HELICOPTER_TAIL_SERVO) {
-			static_cast<ActuatorEffectivenessHelicopter *>(_actuator_effectiveness)->publishSysIdActuatorStatus(actuator_servos);
-		}
 	}
 }
 

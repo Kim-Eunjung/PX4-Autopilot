@@ -89,8 +89,6 @@ public:
 	void updateSetpoint(const matrix::Vector<float, NUM_AXES> &control_sp, int matrix_index, ActuatorVector &actuator_sp,
 			    const ActuatorVector &actuator_min, const ActuatorVector &actuator_max) override;
 
-	void publishSysIdActuatorStatus(const actuator_servos_s &actuator_servos);
-
 	void getUnallocatedControl(int matrix_index, control_allocator_status_s &status) override;
 private:
 	float throttleSpoolupProgress();

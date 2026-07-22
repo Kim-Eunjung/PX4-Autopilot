@@ -32,30 +32,6 @@ float32 total_delta_lat         # pure_delta_lat + sys_id_delta_lat
 float32 total_delta_col         # pure_delta_col + sys_id_delta_col
 float32 total_delta_ped         # pure_delta_ped + sys_id_delta_ped
 
-float32 pure_servo_tail         # requested tail servo command from controller path before SYS_ID
-float32 pure_servo_swash0       # requested swash servo 0 command from controller path before SYS_ID
-float32 pure_servo_swash1       # requested swash servo 1 command from controller path before SYS_ID
-float32 pure_servo_swash2       # requested swash servo 2 command from controller path before SYS_ID
-float32 pure_servo_swash3       # requested swash servo 3 command from controller path before SYS_ID
-
-float32 sys_id_servo_tail       # requested SYS_ID tail servo component before clipping/output reversal
-float32 sys_id_servo_swash0     # requested SYS_ID swash servo 0 component before clipping/output reversal
-float32 sys_id_servo_swash1     # requested SYS_ID swash servo 1 component before clipping/output reversal
-float32 sys_id_servo_swash2     # requested SYS_ID swash servo 2 component before clipping/output reversal
-float32 sys_id_servo_swash3     # requested SYS_ID swash servo 3 component before clipping/output reversal
-
-float32 requested_servo_tail    # pure_servo_tail + sys_id_servo_tail before clipping/output reversal
-float32 requested_servo_swash0  # pure_servo_swash0 + sys_id_servo_swash0 before clipping/output reversal
-float32 requested_servo_swash1  # pure_servo_swash1 + sys_id_servo_swash1 before clipping/output reversal
-float32 requested_servo_swash2  # pure_servo_swash2 + sys_id_servo_swash2 before clipping/output reversal
-float32 requested_servo_swash3  # pure_servo_swash3 + sys_id_servo_swash3 before clipping/output reversal
-
-float32 servo_tail              # actuator_servos tail command before PWM mapping/output reversal
-float32 servo_swash0            # actuator_servos swash servo 0 command before PWM mapping/output reversal
-float32 servo_swash1            # actuator_servos swash servo 1 command before PWM mapping/output reversal
-float32 servo_swash2            # actuator_servos swash servo 2 command before PWM mapping/output reversal
-float32 servo_swash3            # actuator_servos swash servo 3 command before PWM mapping/output reversal
-
 float32[8] pure_servo           # requested actuator_servos command from controller path before SYS_ID
 float32[8] sys_id_servo         # requested SYS_ID actuator_servos component per servo channel
 float32[8] requested_servo      # pure_servo + sys_id_servo before clipping/output reversal
