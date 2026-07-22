@@ -77,7 +77,6 @@ ActuatorEffectivenessHelicopter::ActuatorEffectivenessHelicopter(ModuleParams *p
 	_param_handles.sys_id_omega_min = param_find("SYS_ID_OME_MIN");
 	_param_handles.sys_id_omega_max = param_find("SYS_ID_OME_MAX");
 	_param_handles.sys_id_time_record = param_find("SYS_ID_T_REC");
-	_param_handles.sys_id_trim = param_find("SYS_ID_Y_TRIM");
 
 	updateParams();
 }
@@ -139,7 +138,6 @@ void ActuatorEffectivenessHelicopter::updateParams()
 	param_get(_param_handles.sys_id_omega_min, &_sys_id.omega_min);
 	param_get(_param_handles.sys_id_omega_max, &_sys_id.omega_max);
 	param_get(_param_handles.sys_id_time_record, &_sys_id.time_record);
-	param_get(_param_handles.sys_id_trim, &_sys_id.trim);
 
 	_sys_id.mode_param = math::constrain(_sys_id.mode_param,
 					     static_cast<int32_t>(SysIdMode::Disabled),
@@ -158,7 +156,6 @@ void ActuatorEffectivenessHelicopter::updateParams()
 	_sys_id.omega_min = math::max(_sys_id.omega_min, 0.01f);
 	_sys_id.omega_max = math::max(_sys_id.omega_max, 0.01f);
 	_sys_id.time_record = math::max(_sys_id.time_record, 1.f);
-	_sys_id.trim = math::constrain(_sys_id.trim, -1.f, 1.f);
 }
 
 bool ActuatorEffectivenessHelicopter::getEffectivenessMatrix(Configuration &configuration,
@@ -196,10 +193,8 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 	_rpm_control.setSpoolupProgress(spoolup_progress);
 	rpm_control_output = _rpm_control.getActuatorCorrection();
 #endif // CONTROL_ALLOCATOR_RPM_CONTROL
-	float sys_id_elapsed_time = 0.f;
-
 	updateSysIdRcSelection();
-	const float sys_id_signal = updateSysIdSignal(sys_id_elapsed_time);
+	const float sys_id_signal = updateSysIdSignal();
 
 	// throttle/collective pitch curve
 	const float throttle = (math::interpolateN(-control_sp(ControlAxis::THRUST_Z), _geometry.throttle_curve)
@@ -281,8 +276,7 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 		}
 	}
 
-	updateSysIdStatus(sys_id_elapsed_time,
-			  pure_delta_lon, pure_delta_lat, pure_delta_col, pure_delta_ped,
+	updateSysIdStatus(pure_delta_lon, pure_delta_lat, pure_delta_col, pure_delta_ped,
 			  sys_id_delta_lon, sys_id_delta_lat, sys_id_delta_col, sys_id_delta_ped);
 }
 
@@ -357,9 +351,8 @@ float ActuatorEffectivenessHelicopter::sysIdRcAuxValue(int32_t channel) const
 	}
 }
 
-float ActuatorEffectivenessHelicopter::updateSysIdSignal(float &elapsed_time)
+float ActuatorEffectivenessHelicopter::updateSysIdSignal()
 {
-	elapsed_time = 0.f;
 	float excitation = 0.f;
 
 	const hrt_abstime now = hrt_absolute_time();
@@ -382,7 +375,7 @@ float ActuatorEffectivenessHelicopter::updateSysIdSignal(float &elapsed_time)
 		_sys_id_last_axis = _sys_id.axis;
 	}
 
-	elapsed_time = static_cast<float>(now - _sys_id_start_time) * 1e-6f;
+	const float elapsed_time = static_cast<float>(now - _sys_id_start_time) * 1e-6f;
 
 	if (elapsed_time >= _sys_id.time_record) {
 		return 0.f;
@@ -413,17 +406,15 @@ float ActuatorEffectivenessHelicopter::updateSysIdSignal(float &elapsed_time)
 		excitation = _sys_id.amplitude * sinf(phase);
 	}
 
-	return _sys_id.trim + excitation;
+	return excitation;
 }
 
-void ActuatorEffectivenessHelicopter::updateSysIdStatus(float elapsed_time,
-		float pure_delta_lon, float pure_delta_lat, float pure_delta_col, float pure_delta_ped,
+void ActuatorEffectivenessHelicopter::updateSysIdStatus(float pure_delta_lon, float pure_delta_lat, float pure_delta_col, float pure_delta_ped,
 		float sys_id_delta_lon, float sys_id_delta_lat, float sys_id_delta_col, float sys_id_delta_ped)
 {
 	_sys_id_actuator_status.timestamp = hrt_absolute_time();
 	_sys_id_actuator_status.mode = static_cast<uint8_t>(_sys_id.mode);
 	_sys_id_actuator_status.axis = static_cast<uint8_t>(_sys_id.axis);
-	_sys_id_actuator_status.elapsed_time = elapsed_time;
 	_sys_id_actuator_status.pure_delta_lon = pure_delta_lon;
 	_sys_id_actuator_status.pure_delta_lat = pure_delta_lat;
 	_sys_id_actuator_status.pure_delta_col = pure_delta_col;

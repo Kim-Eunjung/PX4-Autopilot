@@ -11,8 +11,6 @@ uint8 AXIS_YAW = 2
 uint8 mode                      # SYS_ID_EN
 uint8 axis                      # SYS_ID_AXIS
 
-float32 elapsed_time            # time since injection start [s]
-
 float32 pure_delta_lon          # longitudinal cyclic command from controller path before SYS_ID
 float32 pure_delta_lat          # lateral cyclic command from controller path before SYS_ID
 float32 pure_delta_col          # collective pitch command from controller path before SYS_ID

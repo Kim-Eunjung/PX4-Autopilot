@@ -133,7 +133,6 @@ private:
 		param_t sys_id_omega_min;
 		param_t sys_id_omega_max;
 		param_t sys_id_time_record;
-		param_t sys_id_trim;
 	};
 	ParamHandles _param_handles{};
 
@@ -163,7 +162,6 @@ private:
 		float omega_min{0.f};
 		float omega_max{0.f};
 		float time_record{0.f};
-		float trim{0.f};
 	};
 
 	SysIdConfig _sys_id{};
@@ -195,8 +193,8 @@ private:
 
 	void updateSysIdRcSelection();
 	float sysIdRcAuxValue(int32_t channel) const;
-	float updateSysIdSignal(float &elapsed_time);
-	void updateSysIdStatus(float elapsed_time,
+	float updateSysIdSignal();
+	void updateSysIdStatus(
 				float pure_delta_lon, float pure_delta_lat, float pure_delta_col, float pure_delta_ped,
 				float sys_id_delta_lon, float sys_id_delta_lat, float sys_id_delta_col, float sys_id_delta_ped);
 };

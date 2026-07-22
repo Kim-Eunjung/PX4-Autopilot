@@ -105,6 +105,5 @@ param set-default SYS_ID_INTERV 10
 param set-default SYS_ID_OME_MIN 0.3
 param set-default SYS_ID_OME_MAX 12
 param set-default SYS_ID_T_REC 10
-param set-default SYS_ID_Y_TRIM 0
 param set-default SYS_ID_RCMODE_CH 0
 param set-default SYS_ID_RCAXIS_CH 0
