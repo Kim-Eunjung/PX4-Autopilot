@@ -147,8 +147,10 @@ void ActuatorEffectivenessHelicopter::updateParams()
 	_sys_id.axis_param = math::constrain(_sys_id.axis_param,
 					     static_cast<int32_t>(SysIdAxis::Roll),
 					     static_cast<int32_t>(SysIdAxis::Yaw));
-	_sys_id.rc_mode_channel = math::constrain(_sys_id.rc_mode_channel, 0, 6);
-	_sys_id.rc_axis_channel = math::constrain(_sys_id.rc_axis_channel, 0, 6);
+	_sys_id.rc_mode_channel = math::constrain(_sys_id.rc_mode_channel,
+				  static_cast<int32_t>(0), static_cast<int32_t>(6));
+	_sys_id.rc_axis_channel = math::constrain(_sys_id.rc_axis_channel,
+				  static_cast<int32_t>(0), static_cast<int32_t>(6));
 	_sys_id.mode = _sys_id.mode_param;
 	_sys_id.axis = _sys_id.axis_param;
 	_sys_id.amplitude = math::constrain(_sys_id.amplitude, 0.f, 1.f);
