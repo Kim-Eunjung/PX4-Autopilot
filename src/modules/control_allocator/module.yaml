@@ -598,8 +598,9 @@ parameters:
             0: Roll
             1: Pitch
             2: Yaw
+            3: Collective
           min: 0
-          max: 2
+          max: 3
           default: 1
         SYS_ID_RCMODE_CH:
           description:

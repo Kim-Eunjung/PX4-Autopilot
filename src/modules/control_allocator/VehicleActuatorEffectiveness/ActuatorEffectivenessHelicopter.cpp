@@ -144,7 +144,7 @@ void ActuatorEffectivenessHelicopter::updateParams()
 					     static_cast<int32_t>(SysIdMode::Sweep));
 	_sys_id.axis_param = math::constrain(_sys_id.axis_param,
 					     static_cast<int32_t>(SysIdAxis::Roll),
-					     static_cast<int32_t>(SysIdAxis::Yaw));
+					     static_cast<int32_t>(SysIdAxis::Collective));
 	_sys_id.rc_mode_channel = math::constrain(_sys_id.rc_mode_channel,
 				  static_cast<int32_t>(0), static_cast<int32_t>(6));
 	_sys_id.rc_axis_channel = math::constrain(_sys_id.rc_axis_channel,
@@ -228,6 +228,9 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 
 	} else if (_sys_id.axis == static_cast<int32_t>(SysIdAxis::Pitch)) {
 		sys_id_delta_lon = sys_id_signal;
+
+	} else if (_sys_id.axis == static_cast<int32_t>(SysIdAxis::Collective)) {
+		sys_id_delta_col = sys_id_signal;
 	}
 
 	// Saturation check for yaw
@@ -242,7 +245,7 @@ void ActuatorEffectivenessHelicopter::updateSetpoint(const matrix::Vector<float,
 		const int actuator_index = _first_swash_plate_servo_index + i;
 		float roll_coeff = sinf(_geometry.swash_plate_servos[i].angle) * _geometry.swash_plate_servos[i].arm_length;
 		float pitch_coeff = cosf(_geometry.swash_plate_servos[i].angle) * _geometry.swash_plate_servos[i].arm_length;
-		actuator_sp(actuator_index) = collective_pitch
+		actuator_sp(actuator_index) = collective_pitch + sys_id_delta_col
 				+ control_sp(ControlAxis::PITCH) * pitch_coeff
 				- control_sp(ControlAxis::ROLL) * roll_coeff
 				+ _geometry.swash_plate_servos[i].trim;
@@ -320,7 +323,8 @@ void ActuatorEffectivenessHelicopter::updateSysIdRcSelection()
 			_sys_id.axis = static_cast<int32_t>(SysIdAxis::Pitch);
 
 		} else {
-			_sys_id.axis = static_cast<int32_t>(SysIdAxis::Yaw);
+			_sys_id.axis = (_sys_id.axis_param == static_cast<int32_t>(SysIdAxis::Collective)) ?
+				       static_cast<int32_t>(SysIdAxis::Collective) : static_cast<int32_t>(SysIdAxis::Yaw);
 		}
 	}
 }

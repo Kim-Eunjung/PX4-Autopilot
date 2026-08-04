@@ -147,7 +147,8 @@ private:
 	enum class SysIdAxis : int32_t {
 		Roll = sys_id_actuator_s::AXIS_ROLL,
 		Pitch = sys_id_actuator_s::AXIS_PITCH,
-		Yaw = sys_id_actuator_s::AXIS_YAW
+		Yaw = sys_id_actuator_s::AXIS_YAW,
+		Collective = sys_id_actuator_s::AXIS_COLLECTIVE
 	};
 
 	struct SysIdConfig {

@@ -7,6 +7,8 @@ uint8 MODE_SWEEP = 2
 uint8 AXIS_ROLL = 0
 uint8 AXIS_PITCH = 1
 uint8 AXIS_YAW = 2
+uint8 AXIS_COLLECTIVE = 3
+uint8 AXIS_HEAVE = 3 # Deprecated alias for AXIS_COLLECTIVE
 
 uint8 mode                      # SYS_ID_EN
 uint8 axis                      # SYS_ID_AXIS
