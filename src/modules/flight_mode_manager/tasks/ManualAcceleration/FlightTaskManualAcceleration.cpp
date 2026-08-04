@@ -57,6 +57,14 @@ bool FlightTaskManualAcceleration::activate(const trajectory_setpoint_s &last_se
 	return ret;
 }
 
+void FlightTaskManualAcceleration::overrideCruiseSpeed(const float cruise_speed_m_s)
+{
+	if (PX4_ISFINITE(cruise_speed_m_s)) {
+		_qgc_forward_speed_sp = math::max(cruise_speed_m_s, 0.f);
+		_qgc_forward_speed_active = true;
+	}
+}
+
 bool FlightTaskManualAcceleration::update()
 {
 	const vehicle_local_position_s vehicle_local_pos = _sub_vehicle_local_position.get();
@@ -72,17 +80,68 @@ bool FlightTaskManualAcceleration::update()
 	// limit horizontal velocity near max hagl to decrease chance of larger gound distance jumps
 	static constexpr float factor_threshold = 0.8f; // threshold ratio of max_hagl
 	static constexpr float min_vel = 2.f; // minimum max-velocity near max_hagl
+	float velocity_constraint = _param_mpc_vel_manual.get();
+
+	if (PX4_ISFINITE(vehicle_local_pos.vxy_max)) {
+		velocity_constraint = math::min(velocity_constraint, vehicle_local_pos.vxy_max);
+	}
 
 	if (max_hagl_ratio > factor_threshold) {
 		max_hagl_ratio = math::min(max_hagl_ratio, 1.f);
-		const float vxy_max = math::min(vehicle_local_pos.vxy_max, _param_mpc_vel_manual.get());
-		_stick_acceleration_xy.setVelocityConstraint(interpolate(vxy_max, factor_threshold, min_vel, vxy_max, min_vel));
-
-	} else {
-		_stick_acceleration_xy.setVelocityConstraint(math::min(_param_mpc_vel_manual.get(), vehicle_local_pos.vxy_max));
+		velocity_constraint = interpolate(velocity_constraint, factor_threshold, min_vel, velocity_constraint, min_vel);
 	}
 
-	_stick_acceleration_xy.generateSetpoints(_sticks.getPitchRollExpo(), _yaw, _yaw_setpoint, _position,
+	_stick_acceleration_xy.setVelocityConstraint(velocity_constraint);
+
+	Vector2f stick_xy = _sticks.getPitchRollExpo();
+	Sticks::limitStickUnitLengthXY(stick_xy);
+
+	const bool stick_override = _sticks.isAvailable() && (stick_xy.length() > FLT_EPSILON);
+
+	if (_qgc_forward_speed_active && !stick_override) {
+		_position_setpoint(0) = NAN;
+		_position_setpoint(1) = NAN;
+
+		Vector2f vel_sp_xy{math::min(_qgc_forward_speed_sp, velocity_constraint), 0.f};
+
+		// Rotate the commanded forward body velocity into the local frame.
+		Sticks::rotateIntoHeadingFrameXY(vel_sp_xy, _yaw, _yaw_setpoint);
+
+		_velocity_setpoint.xy() = vel_sp_xy;
+		_acceleration_setpoint(0) = NAN;
+		_acceleration_setpoint(1) = NAN;
+
+		if (_qgc_forward_speed_sp <= FLT_EPSILON) {
+			const float vel_xy_norm = Vector2f(_velocity).length();
+			const bool stopped = (_param_mpc_hold_max_xy.get() < FLT_EPSILON
+					      || vel_xy_norm < _param_mpc_hold_max_xy.get());
+
+			if (stopped) {
+				_position_setpoint.xy() = _position.xy();
+			}
+		}
+
+		_constraints.want_takeoff = _checkTakeoff();
+
+		// check if an external yaw handler is active and if yes, let it update the yaw setpoints
+		_weathervane.update();
+
+		if (_weathervane.isActive()) {
+			_yaw_setpoint = NAN;
+
+			if (Vector2f(_position_setpoint).isAllFinite()) {
+				_yawspeed_setpoint += _weathervane.getWeathervaneYawrate();
+			}
+		}
+
+		return ret;
+	}
+
+	if (stick_override) {
+		_qgc_forward_speed_active = false;
+	}
+
+	_stick_acceleration_xy.generateSetpoints(stick_xy, _yaw, _yaw_setpoint, _position,
 			_velocity_setpoint_feedback.xy(), _deltatime);
 	_stick_acceleration_xy.getSetpoints(_position_setpoint, _velocity_setpoint, _acceleration_setpoint);
 
@@ -107,6 +166,11 @@ bool FlightTaskManualAcceleration::update()
 void FlightTaskManualAcceleration::_ekfResetHandlerPositionXY(const matrix::Vector2f &delta_xy)
 {
 	_stick_acceleration_xy.addToPositionSetpoint(delta_xy);
+
+	if (_qgc_forward_speed_active && (_qgc_forward_speed_sp <= FLT_EPSILON)
+	    && Vector2f(_position_setpoint).isAllFinite()) {
+		_position_setpoint.xy() += delta_xy;
+	}
 }
 
 void FlightTaskManualAcceleration::_ekfResetHandlerVelocityXY(const matrix::Vector2f &delta_vxy)

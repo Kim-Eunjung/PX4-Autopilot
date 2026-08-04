@@ -47,10 +47,11 @@
 class FlightTaskManualPosition : public FlightTaskManualAltitude
 {
 public:
-	FlightTaskManualPosition() = default;
+	FlightTaskManualPosition() { _sticks_data_required = false; }
 	virtual ~FlightTaskManualPosition() = default;
 	bool activate(const trajectory_setpoint_s &last_setpoint) override;
 	bool updateInitialize() override;
+	void overrideCruiseSpeed(const float cruise_speed_m_s) override;
 
 protected:
 	void _updateXYlock(); /**< applies position lock based on stick and velocity */
@@ -69,4 +70,7 @@ private:
 
 	WeatherVane _weathervane{this}; /**< weathervane library, used to implement a yaw control law that turns the vehicle nose into the wind */
 	CollisionPrevention _collision_prevention{this}; /**< collision prevention setpoint amendment */
+
+	bool _qgc_forward_speed_active{false};
+	float _qgc_forward_speed_sp{NAN};
 };

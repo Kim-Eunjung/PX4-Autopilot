@@ -62,6 +62,14 @@ bool FlightTaskManualPosition::activate(const trajectory_setpoint_s &last_setpoi
 	return ret;
 }
 
+void FlightTaskManualPosition::overrideCruiseSpeed(const float cruise_speed_m_s)
+{
+	if (PX4_ISFINITE(cruise_speed_m_s)) {
+		_qgc_forward_speed_sp = math::max(cruise_speed_m_s, 0.f);
+		_qgc_forward_speed_active = true;
+	}
+}
+
 void FlightTaskManualPosition::_scaleSticks()
 {
 	/* Use same scaling as for FlightTaskManualAltitude */
@@ -71,14 +79,6 @@ void FlightTaskManualPosition::_scaleSticks()
 
 	Sticks::limitStickUnitLengthXY(stick_xy);
 
-	if (_param_mpc_vel_man_side.get() >= 0.f) {
-		stick_xy(1) *= _param_mpc_vel_man_side.get() / _param_mpc_vel_manual.get();
-	}
-
-	if ((_param_mpc_vel_man_back.get() >= 0.f) && (stick_xy(0) < 0.f)) {
-		stick_xy(0) *= _param_mpc_vel_man_back.get() / _param_mpc_vel_manual.get();
-	}
-
 	const float max_speed_from_estimator = _sub_vehicle_local_position.get().vxy_max;
 
 	float velocity_scale = _param_mpc_vel_manual.get();
@@ -86,6 +86,30 @@ void FlightTaskManualPosition::_scaleSticks()
 	if (PX4_ISFINITE(max_speed_from_estimator)) {
 		// Constrain with optical flow limit but leave 0.3 m/s for repositioning
 		velocity_scale = math::constrain(velocity_scale, 0.3f, max_speed_from_estimator);
+	}
+
+	const bool stick_override = _sticks.isAvailable() && (stick_xy.length() > FLT_EPSILON);
+
+	if (_qgc_forward_speed_active && !stick_override) {
+		Vector2f vel_sp_xy{math::min(_qgc_forward_speed_sp, velocity_scale), 0.f};
+
+		// Rotate the commanded forward body velocity into the local frame.
+		Sticks::rotateIntoHeadingFrameXY(vel_sp_xy, _yaw, _yaw_setpoint);
+
+		_velocity_setpoint.xy() = vel_sp_xy;
+		return;
+	}
+
+	if (stick_override) {
+		_qgc_forward_speed_active = false;
+	}
+
+	if (_param_mpc_vel_man_side.get() >= 0.f) {
+		stick_xy(1) *= _param_mpc_vel_man_side.get() / _param_mpc_vel_manual.get();
+	}
+
+	if ((_param_mpc_vel_man_back.get() >= 0.f) && (stick_xy(0) < 0.f)) {
+		stick_xy(0) *= _param_mpc_vel_man_back.get() / _param_mpc_vel_manual.get();
 	}
 
 	// scale velocity to its maximum limits

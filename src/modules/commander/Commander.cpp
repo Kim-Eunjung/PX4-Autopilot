@@ -68,6 +68,7 @@
 
 #include <math.h>
 #include <float.h>
+#include <stdlib.h>
 #include <cstring>
 #include <matrix/math.hpp>
 
@@ -350,6 +351,24 @@ int Commander::custom_command(int argc, char *argv[])
 		send_vehicle_command(vehicle_command_s::VEHICLE_CMD_NAV_LAND);
 
 		return 0;
+	}
+
+	if (!strcmp(argv[0], "speed")) {
+		if (argc > 1) {
+			char *end = nullptr;
+			const float speed = strtof(argv[1], &end);
+
+			if (end != argv[1] && *end == '\0' && PX4_ISFINITE(speed) && speed >= 0.f) {
+				send_vehicle_command(vehicle_command_s::VEHICLE_CMD_DO_CHANGE_SPEED,
+						     static_cast<float>(vehicle_command_s::SPEED_TYPE_GROUNDSPEED),
+						     speed,
+						     -1.f);
+				return 0;
+			}
+		}
+
+		PX4_ERR("usage: commander speed <groundspeed_m_s>");
+		return 1;
 	}
 
 	if (!strcmp(argv[0], "transition")) {

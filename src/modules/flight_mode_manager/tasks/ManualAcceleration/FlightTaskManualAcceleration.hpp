@@ -40,10 +40,11 @@
 class FlightTaskManualAcceleration : public FlightTaskManualAltitudeSmoothVel
 {
 public:
-	FlightTaskManualAcceleration() = default;
+	FlightTaskManualAcceleration() { _sticks_data_required = false; }
 	virtual ~FlightTaskManualAcceleration() = default;
 	bool activate(const trajectory_setpoint_s &last_setpoint) override;
 	bool update() override;
+	void overrideCruiseSpeed(const float cruise_speed_m_s) override;
 
 protected:
 	void _ekfResetHandlerPositionXY(const matrix::Vector2f &delta_xy) override;
@@ -56,4 +57,8 @@ protected:
 					(ParamFloat<px4::params::MPC_VEL_MANUAL>) _param_mpc_vel_manual,
 					(ParamFloat<px4::params::MPC_ACC_HOR>) _param_mpc_acc_hor
 				       )
+
+private:
+	bool _qgc_forward_speed_active{false};
+	float _qgc_forward_speed_sp{NAN};
 };
